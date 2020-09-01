@@ -21,10 +21,14 @@ function renderImageCardNode(imageObj) {
     <h2 class="title">${imageObj.title}</h2>
     <img src="${imageObj.image}" class="image" />
     <div class="likes-section" data-likes="${imageObj.likes}">
-      <span class="likes">${imageObj.likes} likes</span>
+      <span class="likes"
+        data-image-id="${imageObj.id}">
+          ${imageObj.likes} likes - click to remove
+      </span>
       <button class="like-button" data-image-id="${imageObj.id}">♥</button>
     </div>
     <ul class="comments">
+      <li>Click a comment to delete it!</li>
       ${renderCommentsHTML(imageObj.comments)}
     </ul>
     <form class="comment-form">
@@ -52,7 +56,13 @@ function renderCommentsHTML(comments) {
 }
 
 function renderCommentHTML(comment) {
-  return `<li id="${comment.id}" data-image-id="${comment.imageId}">${comment.content}</li>`;
+  return `
+  <li
+    id="${comment.id}"
+    class="comment"
+    data-image-id="${comment.imageId}">
+    ${comment.content}
+  </li>`;
 }
 
 function renderCommentNode(comment) {
@@ -73,15 +83,46 @@ function handleMouseUp(event) {
   if (event.target.matches(".like-button")) {
     const likesSection = event.target.parentElement;
     let likes = +likesSection.dataset.likes + 1;
-    likesSection.dataset.likes = likes.toString();
 
-    const likeNode = likesSection.getElementsByClassName("likes")[0];
+    // likesSection.dataset.likes = likes.toString();
 
-    console.log(likeNode);
-    likeNode.textContent = `${likes} likes`;
+    // const likeNode = likesSection.getElementsByClassName("likes")[0];
 
+    // likeNode.textContent = `${likes} likes`;
+
+    updateLikes(likes, likesSection);
     patchImageLikes(event.target.dataset.imageId, likes);
+  } else if (event.target.matches(".likes")) {
+    const likesSection = event.target.parentElement;
+    let likes = likesSection.dataset.likes;
+
+    if (likes == 0) return;
+
+    likes -= 1;
+
+    // likesSection.dataset.likes = likes.toString();
+
+    // const likeNode = likesSection.getElementsByClassName("likes")[0];
+
+    // likeNode.textContent = `${likes} likes`;
+
+    updateLikes(likes, likesSection);
+    patchImageLikes(event.target.dataset.imageId, likes);
+  } else if (event.target.matches(".comment")) {
+    const commentId = event.target.id;
+
+    event.target.parentNode.removeChild(event.target);
+
+    deleteComment(commentId);
   }
+}
+
+function updateLikes(likes, likesSection) {
+  likesSection.dataset.likes = likes.toString();
+
+  const likeNode = likesSection.getElementsByClassName("likes")[0];
+
+  likeNode.textContent = `${likes} likes`;
 }
 
 function handleSubmit(event) {
@@ -92,14 +133,15 @@ function handleSubmit(event) {
     const commentsElement = imageElement.getElementsByClassName("comments")[0];
 
     const comment = {
-      id: "not saved",
-      imageId: imageElement.id,
+      imageId: +imageElement.id,
       content: event.target.content.value,
     };
 
     commentsElement.appendChild(renderCommentNode(comment));
 
     event.target.content.value = "";
+
+    postComment(comment);
   }
 }
 
@@ -120,7 +162,29 @@ function patchImageLikes(imageId, likes) {
     .catch(console.log);
 }
 
-// Projecting
+function postComment(comment) {
+  const configObj = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(comment),
+  };
+
+  fetch("http://localhost:3000/comments/", configObj)
+    .then((resp) => resp.json())
+    .catch(console.log);
+}
+
+function deleteComment(commentId) {
+  fetch(`http://localhost:3000/comments/${commentId}`, { method: "DELETE" })
+    .then((resp) => resp.json())
+    .catch(console.log);
+}
+
+// Projecting - could set this up to fetch and render all the cards
+// Would need to render the skeletons for all the cards, then fire an event on each card to render the comments
 // function fetchAndRenderAllImageCards() {
 //   fetch("http://localhost:3000/images")
 //     .then((resp) => resp.json())
