@@ -84,12 +84,6 @@ function handleMouseUp(event) {
     const likesSection = event.target.parentElement;
     let likes = +likesSection.dataset.likes + 1;
 
-    // likesSection.dataset.likes = likes.toString();
-
-    // const likeNode = likesSection.getElementsByClassName("likes")[0];
-
-    // likeNode.textContent = `${likes} likes`;
-
     updateLikes(likes, likesSection);
     patchImageLikes(event.target.dataset.imageId, likes);
   } else if (event.target.matches(".likes")) {
@@ -97,14 +91,7 @@ function handleMouseUp(event) {
     let likes = likesSection.dataset.likes;
 
     if (likes == 0) return;
-
     likes -= 1;
-
-    // likesSection.dataset.likes = likes.toString();
-
-    // const likeNode = likesSection.getElementsByClassName("likes")[0];
-
-    // likeNode.textContent = `${likes} likes`;
 
     updateLikes(likes, likesSection);
     patchImageLikes(event.target.dataset.imageId, likes);
@@ -195,4 +182,11 @@ function deleteComment(commentId) {
 //   for (const image of images) {
 //     appendImageCardNode(image);
 //   }
+// }
+
+//Example funcction to fire on imageCardLoaded event
+// function imageCardLoaded(event) {
+//   const commentsList = event.target.getElementsByClassName("comments")[0];
+
+//   //fetchAndRenderComments(event.target.id, commentsList);
 // }
